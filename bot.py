@@ -4,14 +4,11 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 import google.generativeai as genai
 
-# ========== PUT YOUR KEYS HERE ==========
-TELEGRAM_TOKEN = 8993862862:AAFWVyvQVpy91ISvk7Ih1IaLkt1DvJOI1qc
-
-GEMINI_API_KEY = AQ.Ab8RN6KzZhEQ8HdpoS79IzoK7TsnYeSd1YksZREPRcNW_Npo7A
-# ========================================
+TELEGRAM_TOKEN = os.environ.get("8993862862:AAFWVyvQVpy91ISvk7Ih1IaLkt1DvJOI1qc")
+GEMINI_API_KEY = os.environ.get("AQ.Ab8RN6KzZhEQ8HdpoS79IzoK7TsnYeSd1YksZREPRcNW_Npo7A")
 
 genai.configure(api_key=GEMINI_API_KEY)
-model = genai.GenerativeModel("gemini-3.5-flash")   # free & supports images
+model = genai.GenerativeModel("gemini-1.5-flash")
 
 logging.basicConfig(format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", level=logging.INFO)
 
@@ -50,28 +47,18 @@ Rules:
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "📊 Chart Analyzer Bot (Gautam Jha style)\n\n"
-        "Send me:\n"
-        "1. A chart screenshot + caption (e.g. BTC 15m or Gold daily)\n"
-        "2. Or just type a description of the chart\n\n"
-        "I will give you liquidity levels + trade ideas."
+        "Send me a chart screenshot + caption (example: BTC 15m) or type a description."
     )
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "How to use:\n"
-        "• Photo + caption = best results\n"
-        "• Text description also works\n"
-        "• Mention instrument and timeframe"
-    )
+    await update.message.reply_text("Send a chart photo + caption or just type the chart description.")
 
 async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text("Analyzing chart... please wait ⏳")
-
     photo = update.message.photo[-1]
     file = await context.bot.get_file(photo.file_id)
     image_bytes = await file.download_as_bytearray()
-
-    caption = update.message.caption or "No caption provided. Analyze the chart."
+    caption = update.message.caption or "Analyze this chart using Gautam Jha style."
 
     try:
         response = model.generate_content(
@@ -79,14 +66,12 @@ async def handle_photo(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
         await update.message.reply_text(response.text)
     except Exception as e:
-        await update.message.reply_text(f"Error analyzing image: {e}\n\nTry sending a clearer chart or text description.")
+        await update.message.reply_text(f"Error analyzing image: {e}")
 
 async def handle_text(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    text = update.message.text
     await update.message.reply_text("Analyzing... ⏳")
-
     try:
-        response = model.generate_content([SYSTEM_PROMPT, text])
+        response = model.generate_content([SYSTEM_PROMPT, update.message.text])
         await update.message.reply_text(response.text)
     except Exception as e:
         await update.message.reply_text(f"Error: {e}")
