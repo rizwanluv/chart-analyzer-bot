@@ -4,7 +4,7 @@ from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 import google.generativeai as genai
 
-TELEGRAM_TOKEN = os.environ.get("8993862862:AAFWVyvQVpy91ISvk7Ih1IaLkt1DvJOI1qc")
+TELEGRAM_TOKEN = os.environ.get("AAFWVyvQVpy91ISvk7Ih1IaLkt1DvJOI1qc")
 GEMINI_API_KEY = os.environ.get("AQ.Ab8RN6KzZhEQ8HdpoS79IzoK7TsnYeSd1YksZREPRcNW_Npo7A")
 
 genai.configure(api_key=GEMINI_API_KEY)
